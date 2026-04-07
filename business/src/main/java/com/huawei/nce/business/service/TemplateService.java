@@ -3,6 +3,8 @@ package com.huawei.nce.business.service;
 import com.huawei.nce.business.dto.TemplateSummary;
 import com.huawei.nce.business.model.ConfigTemplate;
 import com.huawei.nce.business.repository.ConfigTemplateRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -19,6 +21,8 @@ import java.util.zip.ZipOutputStream;
 
 @Service
 public class TemplateService {
+
+    private static final Logger log = LoggerFactory.getLogger(TemplateService.class);
 
     private static final String UPLOAD_DIR = "./upload/templates";
 
@@ -40,7 +44,9 @@ public class TemplateService {
     }
 
     public ConfigTemplate saveTemplate(String name, MultipartFile file) throws IOException {
+        log.info("上传模板: name={}, file={}, size={}", name, file.getOriginalFilename(), file.getSize());
         if (repository.existsByName(name)) {
+            log.error("模板名称已存在: name={}", name);
             throw new RuntimeException("模板名称已存在");
         }
         
@@ -74,6 +80,7 @@ public class TemplateService {
             }
         }
 
+        log.info("模板上传成功: id={}, name={}", id, name);
         return template;
     }
 
@@ -133,10 +140,12 @@ public class TemplateService {
     public boolean deleteTemplate(Long id) {
         Optional<ConfigTemplate> opt = repository.findById(id);
         if (opt.isEmpty()) {
+            log.warn("删除模板失败: 模板不存在, id={}", id);
             return false;
         }
         
         ConfigTemplate template = opt.get();
+        log.info("删除模板: id={}, name={}", id, template.getName());
         try {
             Path dir = Paths.get(template.getStoragePath());
             if (Files.exists(dir)) {
@@ -150,9 +159,12 @@ public class TemplateService {
             if (Files.exists(zipPath)) {
                 Files.delete(zipPath);
             }
-        } catch (IOException ignored) {}
+        } catch (IOException e) {
+            log.error("删除模板文件失败: id={}, error={}", id, e.getMessage());
+        }
         
         repository.deleteById(id);
+        log.info("模板删除成功: id={}", id);
         return true;
     }
 }
