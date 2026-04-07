@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华为NCE网管 - 配置模板</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div id="app">
+        <el-container>
+            <el-aside width="200px" class="sidebar">
+                <div class="logo">
+                    <h3>NCE</h3>
+                    <p>网络管控</p>
+                </div>
+                <el-menu :default-active="activeMenu" class="sidebar-menu">
+                    <el-menu-item index="templates">
+                        <el-icon><FolderOpened /></el-icon>
+                        <span>配置模板</span>
+                    </el-menu-item>
+                </el-menu>
+            </el-aside>
+
+            <el-container>
+                <el-header class="header">
+                    <h2>配置模板管理</h2>
+                    <el-dropdown>
+                        <div class="user-dropdown">
+                            <el-icon><User /></el-icon>
+                            <span>用户</span>
+                            <el-icon class="el-icon--right"><ArrowDown /></el-icon>
+                        </div>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item @click="handleLogout">
+                                    <el-icon><SwitchButton /></el-icon>
+                                    退出登录
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </el-header>
+
+                <el-main>
+                    <el-card>
+                        <template #header>
+                            <div class="card-header">
+                                <span>模板列表</span>
+                                <el-button type="primary" @click="showUploadDialog">
+                                    <el-icon><Upload /></el-icon>
+                                    上传模板
+                                </el-button>
+                            </div>
+                        </template>
+
+                        <el-table :data="templates" v-loading="tableLoading">
+                            <el-table-column prop="name" label="模板名称"></el-table-column>
+                            <el-table-column label="操作" width="180">
+                                <template #default="scope">
+                                    <el-button type="text" @click="downloadTemplate(scope.row.id)">下载</el-button>
+                                    <el-button type="text" @click="deleteTemplate(scope.row.id)">删除</el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </el-card>
+                </el-main>
+            </el-container>
+        </el-container>
+
+        <el-dialog v-model="uploadDialogVisible" title="上传配置模板" width="400px">
+            <el-form :model="uploadForm" label-width="80px">
+                <el-form-item label="模板名称" required>
+                    <el-input v-model="uploadForm.name" placeholder="请输入模板名称"></el-input>
+                </el-form-item>
+                <el-form-item label="配置文件">
+                    <el-upload ref="uploadRef" :auto-upload="false" :limit="1" :on-change="handleFileChange" accept=".zip" drag action="#">
+                        <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+                        <div class="el-upload__text">拖拽文件到此处或点击上传</div>
+                        <template #tip>
+                            <div class="el-upload__tip">只支持 .zip 格式文件</div>
+                        </template>
+                    </el-upload>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <el-button @click="uploadDialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="submitUpload" :loading="uploading">上传</el-button>
+            </template>
+        </el-dialog>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/element-plus/dist/index.full.js"></script>
+    <script src="js/templates.js"></script>
+</body>
+</html>

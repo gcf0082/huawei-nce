@@ -1,0 +1,31 @@
+# Build outputs
+target/
+*.class
+
+# Logs
+logs/
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.factorypath
+.project
+.settings/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# H2 Database
+data/
+*.db
+
+# Uploaded files
+upload/
+cookies.txt
+
+# Eclipse
+null.zip

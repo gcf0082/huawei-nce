@@ -1,0 +1,187 @@
+openapi: 3.0.3
+info:
+  title: 华为NCE网管 - Business API
+  description: 配置模板业务服务API，提供配置模板的内部业务处理接口
+  version: 1.0.0
+  contact:
+    name: 华为NCE
+
+servers:
+  - url: http://localhost:8009
+    description: Business服务(8009)
+
+paths:
+  /rest/internal/templates/upload:
+    post:
+      tags:
+        - 配置模板业务接口
+      summary: 上传配置模板
+      description: 接收ZIP文件并解压保存到存储目录
+      operationId: uploadTemplate
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: ZIP配置文件
+      responses:
+        '200':
+          description: 保存成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: 保存失败
+
+  /rest/internal/templates:
+    get:
+      tags:
+        - 配置模板业务接口
+      summary: 获取模板列表
+      description: 获取所有已保存的配置模板
+      operationId: getTemplates
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /rest/internal/templates/{id}:
+    get:
+      tags:
+        - 配置模板业务接口
+      summary: 获取模板详情
+      description: 根据ID获取配置模板详情
+      operationId: getTemplate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 模板ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+    delete:
+      tags:
+        - 配置模板业务接口
+      summary: 删除模板
+      description: 根据ID删除配置模板
+      operationId: deleteTemplate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 模板ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /rest/internal/templates/{id}/file:
+    get:
+      tags:
+        - 配置模板业务接口
+      summary: 下载模板文件
+      description: 根据ID下载配置模板文件
+      operationId: downloadTemplate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 模板ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 下载成功
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: 文件不存在
+
+    delete:
+      tags:
+        - 配置模板业务接口
+      summary: 删除模板
+      description: 根据ID删除配置模板
+      operationId: deleteTemplate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 模板ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+components:
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: 响应码
+        message:
+          type: string
+          description: 响应消息
+        data:
+          type: object
+          description: 响应数据
+
+    ConfigTemplate:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: 模板ID
+        name:
+          type: string
+          description: 模板名称
+        originalFilename:
+          type: string
+          description: 原始文件名
+        fileSize:
+          type: integer
+          format: int64
+          description: 文件大小(字节)
+        uploadTime:
+          type: string
+          format: date-time
+          description: 上传时间
+        storagePath:
+          type: string
+          description: 存储路径

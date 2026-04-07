@@ -1,0 +1,21 @@
+server:
+  port: 8008
+  address: 0.0.0.0
+
+spring:
+  application:
+    name: website
+  thymeleaf:
+    cache: false
+    prefix: classpath:/static
+    suffix: .html
+
+business:
+  url: http://localhost:8009
+
+springdoc:
+  api-docs:
+    path: /rest/api-docs
+  swagger-ui:
+    path: /rest/swagger-ui.html
+    enabled: true

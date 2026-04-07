@@ -1,0 +1,133 @@
+openapi: 3.0.3
+info:
+  title: 华为NCE网管 - Website API
+  description: 配置模板管理前端服务API，提供配置模板的上传、查询、下载、删除接口
+  version: 1.0.0
+  contact:
+    name: 华为NCE
+
+servers:
+  - url: http://localhost:8008
+    description: Website服务(8008)
+
+paths:
+  /rest/api/templates/upload:
+    post:
+      tags:
+        - 配置模板管理
+      summary: 上传配置模板
+      description: 上传ZIP格式的配置模板文件，系统将自动解压保存
+      operationId: uploadTemplate
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: ZIP文件
+      responses:
+        '200':
+          description: 上传成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+        '500':
+          description: 上传失败
+
+  /rest/api/templates:
+    get:
+      tags:
+        - 配置模板管理
+      summary: 获取模板列表
+      description: 获取所有已上传的配置模板列表
+      operationId: getTemplates
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /rest/api/templates/{id}/download:
+    get:
+      tags:
+        - 配置模板管理
+      summary: 下载配置模板
+      description: 根据模板ID下载对应的配置文件
+      operationId: downloadTemplate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 模板ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 下载成功
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '500':
+          description: 下载失败
+
+  /rest/api/templates/{id}:
+    delete:
+      tags:
+        - 配置模板管理
+      summary: 删除配置模板
+      description: 根据模板ID删除对应的配置模板
+      operationId: deleteTemplate
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: 模板ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: 删除成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /rest/api/auth/status:
+    get:
+      tags:
+        - 认证管理
+      summary: 获取认证状态
+      description: 获取当前用户的登录状态
+      operationId: getStatus
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+components:
+  schemas:
+    ApiResponse:
+      type: object
+      properties:
+        code:
+          type: integer
+          description: 响应码
+        message:
+          type: string
+          description: 响应消息
+        data:
+          type: object
+          description: 响应数据

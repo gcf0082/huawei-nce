@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>华为NCE网管 - 登录</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <div id="app" class="login-page">
+        <el-container class="login-container">
+            <el-main>
+                <el-card class="login-card">
+                    <template #header>
+                        <div class="card-header">
+                            <h2>NCE</h2>
+                        </div>
+                    </template>
+                    <el-form :model="loginForm">
+                        <el-form-item>
+                            <el-input v-model="loginForm.username" placeholder="用户名" prefix-icon="User"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-input v-model="loginForm.password" type="password" placeholder="密码" prefix-icon="Lock"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button type="primary" style="width: 100%" @click="handleLogin" :loading="loginLoading">登录</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-card>
+            </el-main>
+        </el-container>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/element-plus/dist/index.full.js"></script>
+    <script src="js/login.js"></script>
+</body>
+</html>
