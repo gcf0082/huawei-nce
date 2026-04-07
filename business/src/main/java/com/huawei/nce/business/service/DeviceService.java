@@ -30,7 +30,7 @@ public class DeviceService {
     }
 
     public DeviceDTO createDevice(String name, String ip, String deviceType, String location, String remark) {
-        log.info("创建设备: name={}, ip={}, deviceType={}, location={}", name, ip, deviceType, location);
+        log.info("Create device: name={}, ip={}, deviceType={}, location={}", name, ip, deviceType, location);
         Device device = new Device();
         device.setName(name);
         device.setIp(ip);
@@ -41,13 +41,13 @@ public class DeviceService {
         device.setLastUpdate(LocalDateTime.now());
         
         device = repository.save(device);
-        log.info("设备创建成功: id={}, name={}", device.getId(), device.getName());
+        log.info("Device created: id={}, name={}", device.getId(), device.getName());
         return toDTO(device);
     }
 
     public boolean updateDevice(Long id, String name, String ip, String deviceType, String location, String remark) {
         return repository.findById(id).map(device -> {
-            log.info("更新设备: id={}, name={}, ip={}", id, name, ip);
+            log.info("Update device: id={}, name={}, ip={}", id, name, ip);
             device.setName(name);
             device.setIp(ip);
             device.setDeviceType(deviceType);
@@ -55,35 +55,35 @@ public class DeviceService {
             device.setRemark(remark);
             device.setLastUpdate(LocalDateTime.now());
             repository.save(device);
-            log.info("设备更新成功: id={}", id);
+            log.info("Device updated: id={}", id);
             return true;
         }).orElseGet(() -> {
-            log.warn("更新设备失败: 设备不存在, id={}", id);
+            log.warn("Update device failed: device not found, id={}", id);
             return false;
         });
     }
 
     public boolean updateStatus(Long id, boolean online) {
         return repository.findById(id).map(device -> {
-            log.info("更新设备状态: id={}, online={}", id, online);
+            log.info("Update device status: id={}, online={}", id, online);
             device.setOnline(online);
             device.setLastUpdate(LocalDateTime.now());
             repository.save(device);
             return true;
         }).orElseGet(() -> {
-            log.warn("更新设备状态失败: 设备不存在, id={}", id);
+            log.warn("Update device status failed: device not found, id={}", id);
             return false;
         });
     }
 
     public boolean deleteDevice(Long id) {
         if (repository.existsById(id)) {
-            log.info("删除设备: id={}", id);
+            log.info("Delete device: id={}", id);
             repository.deleteById(id);
-            log.info("设备删除成功: id={}", id);
+            log.info("Device deleted: id={}", id);
             return true;
         }
-        log.warn("删除设备失败: 设备不存在, id={}", id);
+        log.warn("Delete device failed: device not found, id={}", id);
         return false;
     }
 

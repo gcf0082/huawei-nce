@@ -36,7 +36,7 @@ public class AlarmService {
     }
 
     public AlarmDTO createAlarm(String title, String content, String level, String deviceName, String deviceIp) {
-        log.info("创建告警: title={}, level={}, deviceName={}, deviceIp={}", title, level, deviceName, deviceIp);
+        log.info("Create alarm: title={}, level={}, deviceName={}, deviceIp={}", title, level, deviceName, deviceIp);
         Alarm alarm = new Alarm();
         alarm.setTitle(title);
         alarm.setContent(content);
@@ -47,34 +47,34 @@ public class AlarmService {
         alarm.setHandled(false);
         
         alarm = repository.save(alarm);
-        log.info("告警创建成功: id={}, title={}", alarm.getId(), alarm.getTitle());
+        log.info("Alarm created: id={}, title={}", alarm.getId(), alarm.getTitle());
         return toDTO(alarm);
     }
 
     public boolean handleAlarm(Long id, String handleRemark, String handleUser) {
         return repository.findById(id).map(alarm -> {
-            log.info("处理告警: id={}, handleUser={}", id, handleUser);
+            log.info("Handle alarm: id={}, handleUser={}", id, handleUser);
             alarm.setHandled(true);
             alarm.setHandleRemark(handleRemark);
             alarm.setHandleUser(handleUser);
             alarm.setHandleTime(LocalDateTime.now());
             repository.save(alarm);
-            log.info("告警处理成功: id={}", id);
+            log.info("Alarm handled: id={}", id);
             return true;
         }).orElseGet(() -> {
-            log.warn("处理告警失败: 告警不存在, id={}", id);
+            log.warn("Handle alarm failed: alarm not found, id={}", id);
             return false;
         });
     }
 
     public boolean deleteAlarm(Long id) {
         if (repository.existsById(id)) {
-            log.info("删除告警: id={}", id);
+            log.info("Delete alarm: id={}", id);
             repository.deleteById(id);
-            log.info("告警删除成功: id={}", id);
+            log.info("Alarm deleted: id={}", id);
             return true;
         }
-        log.warn("删除告警失败: 告警不存在, id={}", id);
+        log.warn("Delete alarm failed: alarm not found, id={}", id);
         return false;
     }
 

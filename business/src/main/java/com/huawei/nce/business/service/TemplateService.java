@@ -44,9 +44,9 @@ public class TemplateService {
     }
 
     public ConfigTemplate saveTemplate(String name, MultipartFile file) throws IOException {
-        log.info("上传模板: name={}, file={}, size={}", name, file.getOriginalFilename(), file.getSize());
+        log.info("Upload template: name={}, file={}, size={}", name, file.getOriginalFilename(), file.getSize());
         if (repository.existsByName(name)) {
-            log.error("模板名称已存在: name={}", name);
+            log.error("Template name already exists: name={}", name);
             throw new RuntimeException("模板名称已存在");
         }
         
@@ -80,7 +80,7 @@ public class TemplateService {
             }
         }
 
-        log.info("模板上传成功: id={}, name={}", id, name);
+        log.info("Template uploaded: id={}, name={}", id, name);
         return template;
     }
 
@@ -140,12 +140,12 @@ public class TemplateService {
     public boolean deleteTemplate(Long id) {
         Optional<ConfigTemplate> opt = repository.findById(id);
         if (opt.isEmpty()) {
-            log.warn("删除模板失败: 模板不存在, id={}", id);
+            log.warn("Delete template failed: template not found, id={}", id);
             return false;
         }
         
         ConfigTemplate template = opt.get();
-        log.info("删除模板: id={}, name={}", id, template.getName());
+        log.info("Delete template: id={}, name={}", id, template.getName());
         try {
             Path dir = Paths.get(template.getStoragePath());
             if (Files.exists(dir)) {
@@ -160,11 +160,11 @@ public class TemplateService {
                 Files.delete(zipPath);
             }
         } catch (IOException e) {
-            log.error("删除模板文件失败: id={}, error={}", id, e.getMessage());
+            log.error("Delete template files failed: id={}, error={}", id, e.getMessage());
         }
         
         repository.deleteById(id);
-        log.info("模板删除成功: id={}", id);
+        log.info("Template deleted: id={}", id);
         return true;
     }
 }
