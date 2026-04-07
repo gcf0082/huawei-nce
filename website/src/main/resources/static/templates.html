@@ -3,9 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>华为NCE网管 - 配置模板</title>
     <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
-    <link rel="stylesheet" href="css/main.css">
+    <link rel="stylesheet" href="css/main.css?v=2">
 </head>
 <body>
     <div id="app">
@@ -15,68 +18,138 @@
                     <h3>NCE</h3>
                     <p>网络管控</p>
                 </div>
-                <el-menu :default-active="activeMenu" class="sidebar-menu">
+                <el-menu :default-active="activeMenu" class="sidebar-menu" @select="handleMenuSelect">
                     <el-menu-item index="templates">
-                        <el-icon><FolderOpened /></el-icon>
                         <span>配置模板</span>
+                    </el-menu-item>
+                    <el-menu-item index="alarms">
+                        <span>告警管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="devices">
+                        <span>网络监控</span>
                     </el-menu-item>
                 </el-menu>
             </el-aside>
 
             <el-container>
                 <el-header class="header">
-                    <h2>配置模板管理</h2>
+                    <h2>{{ pageTitle }}</h2>
                     <el-dropdown>
                         <div class="user-dropdown">
-                            <el-icon><User /></el-icon>
                             <span>用户</span>
-                            <el-icon class="el-icon--right"><ArrowDown /></el-icon>
                         </div>
                         <template #dropdown>
                             <el-dropdown-menu>
-                                <el-dropdown-item @click="handleLogout">
-                                    <el-icon><SwitchButton /></el-icon>
-                                    退出登录
-                                </el-dropdown-item>
+                                <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
                             </el-dropdown-menu>
                         </template>
                     </el-dropdown>
                 </el-header>
 
                 <el-main>
-                    <el-card>
-                        <template #header>
-                            <div class="card-header">
-                                <span>模板列表</span>
-                                <el-button type="primary" @click="showUploadDialog">
-                                    <el-icon><Upload /></el-icon>
-                                    上传模板
-                                </el-button>
-                            </div>
-                        </template>
+                    <!-- 配置模板页面 -->
+                    <div v-show="activeMenu === 'templates'">
+                        <el-card>
+                            <template #header>
+                                <div class="card-header">
+                                    <span>模板列表</span>
+                                    <el-button type="primary" @click="showUploadDialog">上传模板</el-button>
+                                </div>
+                            </template>
+                            <el-table :data="templates" v-loading="tableLoading">
+                                <el-table-column prop="name" label="模板名称"></el-table-column>
+                                <el-table-column label="操作" width="180">
+                                    <template #default="scope">
+                                        <el-button type="text" @click="downloadTemplate(scope.row.id)">下载</el-button>
+                                        <el-button type="text" @click="deleteTemplate(scope.row.id)">删除</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </el-card>
+                    </div>
 
-                        <el-table :data="templates" v-loading="tableLoading">
-                            <el-table-column prop="name" label="模板名称"></el-table-column>
-                            <el-table-column label="操作" width="180">
-                                <template #default="scope">
-                                    <el-button type="text" @click="downloadTemplate(scope.row.id)">下载</el-button>
-                                    <el-button type="text" @click="deleteTemplate(scope.row.id)">删除</el-button>
-                                </template>
-                            </el-table-column>
-                        </el-table>
-                    </el-card>
+                    <!-- 告警管理页面 -->
+                    <div v-show="activeMenu === 'alarms'">
+                        <el-card>
+                            <template #header>
+                                <div class="card-header">
+                                    <span>告警列表</span>
+                                    <el-button type="primary" @click="showAlarmDialog">新增告警</el-button>
+                                </div>
+                            </template>
+                            <el-table :data="alarms" v-loading="tableLoading">
+                                <el-table-column prop="level" label="级别" width="80">
+                                    <template #default="scope">
+                                        <el-tag :type="getAlarmLevelType(scope.row.level)">{{ scope.row.level }}</el-tag>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="title" label="标题"></el-table-column>
+                                <el-table-column prop="content" label="内容"></el-table-column>
+                                <el-table-column prop="deviceName" label="设备"></el-table-column>
+                                <el-table-column prop="alarmTime" label="时间" width="160"></el-table-column>
+                                <el-table-column label="状态" width="80">
+                                    <template #default="scope">
+                                        <el-tag :type="scope.row.handled ? 'success' : 'danger'">
+                                            {{ scope.row.handled ? '已处理' : '未处理' }}
+                                        </el-tag>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column label="操作" width="200">
+                                    <template #default="scope">
+                                        <el-button v-if="!scope.row.handled" type="text" @click="handleAlarm(scope.row.id)">处理</el-button>
+                                        <el-button type="text" @click="deleteAlarm(scope.row.id)">删除</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </el-card>
+                    </div>
+
+                    <!-- 网络监控页面 -->
+                    <div v-show="activeMenu === 'devices'">
+                        <el-card>
+                            <template #header>
+                                <div class="card-header">
+                                    <span>设备列表</span>
+                                    <el-button type="primary" @click="showDeviceDialog">添加设备</el-button>
+                                </div>
+                            </template>
+                            <el-table :data="devices" v-loading="tableLoading">
+                                <el-table-column prop="name" label="设备名称"></el-table-column>
+                                <el-table-column prop="ip" label="IP地址" width="140"></el-table-column>
+                                <el-table-column prop="deviceType" label="类型"></el-table-column>
+                                <el-table-column prop="location" label="位置"></el-table-column>
+                                <el-table-column label="状态" width="80">
+                                    <template #default="scope">
+                                        <el-tag :type="scope.row.online ? 'success' : 'danger'">
+                                            {{ scope.row.online ? '在线' : '离线' }}
+                                        </el-tag>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="lastUpdate" label="最后更新" width="160"></el-table-column>
+                                <el-table-column label="操作" width="200">
+                                    <template #default="scope">
+                                        <el-button type="text" @click="toggleDeviceStatus(scope.row)">
+                                            {{ scope.row.online ? '设为离线' : '设为在线' }}
+                                        </el-button>
+                                        <el-button type="text" @click="editDevice(scope.row)">编辑</el-button>
+                                        <el-button type="text" @click="deleteDevice(scope.row.id)">删除</el-button>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </el-card>
+                    </div>
                 </el-main>
             </el-container>
         </el-container>
 
+        <!-- 上传模板对话框 -->
         <el-dialog v-model="uploadDialogVisible" title="上传配置模板" width="400px">
             <el-form :model="uploadForm" label-width="80px">
                 <el-form-item label="模板名称" required>
-                    <el-input v-model="uploadForm.name" placeholder="请输入模板名称"></el-input>
+                    <el-input v-model="uploadForm.name" placeholder="请输入模板名称" autocomplete="off"></el-input>
                 </el-form-item>
                 <el-form-item label="配置文件">
-                    <el-upload ref="uploadRef" :auto-upload="false" :limit="1" :on-change="handleFileChange" accept=".zip" drag action="#">
-                        <el-icon class="el-icon--upload"><UploadFilled /></el-icon>
+                    <el-upload v-if="uploadDialogVisible" ref="uploadRef" :auto-upload="false" :limit="1" :on-change="handleFileChange" :on-remove="handleFileRemove" :file-list="uploadFileList" accept=".zip" drag action="#">
                         <div class="el-upload__text">拖拽文件到此处或点击上传</div>
                         <template #tip>
                             <div class="el-upload__tip">只支持 .zip 格式文件</div>
@@ -89,10 +162,80 @@
                 <el-button type="primary" @click="submitUpload" :loading="uploading">上传</el-button>
             </template>
         </el-dialog>
+
+        <!-- 新增告警对话框 -->
+        <el-dialog v-model="alarmDialogVisible" title="新增告警" width="400px">
+            <el-form :model="alarmForm" label-width="80px">
+                <el-form-item label="标题" required>
+                    <el-input v-model="alarmForm.title" placeholder="请输入告警标题"></el-input>
+                </el-form-item>
+                <el-form-item label="内容" required>
+                    <el-input v-model="alarmForm.content" type="textarea" placeholder="请输入告警内容"></el-input>
+                </el-form-item>
+                <el-form-item label="级别" required>
+                    <el-select v-model="alarmForm.level" placeholder="请选择级别">
+                        <el-option label="严重" value="严重"></el-option>
+                        <el-option label="警告" value="警告"></el-option>
+                        <el-option label="提示" value="提示"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="设备名称">
+                    <el-input v-model="alarmForm.deviceName" placeholder="请输入设备名称"></el-input>
+                </el-form-item>
+                <el-form-item label="设备IP">
+                    <el-input v-model="alarmForm.deviceIp" placeholder="请输入设备IP"></el-input>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <el-button @click="alarmDialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="submitAlarm" :loading="submitting">提交</el-button>
+            </template>
+        </el-dialog>
+
+        <!-- 处理告警对话框 -->
+        <el-dialog v-model="handleAlarmDialogVisible" title="处理告警" width="400px">
+            <el-form :model="handleAlarmForm" label-width="80px">
+                <el-form-item label="处理备注">
+                    <el-input v-model="handleAlarmForm.remark" type="textarea" placeholder="请输入处理备注"></el-input>
+                </el-form-item>
+                <el-form-item label="处理人">
+                    <el-input v-model="handleAlarmForm.user" placeholder="请输入处理人"></el-input>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <el-button @click="handleAlarmDialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="submitHandleAlarm" :loading="submitting">确定</el-button>
+            </template>
+        </el-dialog>
+
+        <!-- 添加/编辑设备对话框 -->
+        <el-dialog v-model="deviceDialogVisible" :title="deviceEditMode ? '编辑设备' : '添加设备'" width="400px">
+            <el-form :model="deviceForm" label-width="80px">
+                <el-form-item label="设备名称" required>
+                    <el-input v-model="deviceForm.name" placeholder="请输入设备名称"></el-input>
+                </el-form-item>
+                <el-form-item label="设备IP" required>
+                    <el-input v-model="deviceForm.ip" placeholder="请输入设备IP"></el-input>
+                </el-form-item>
+                <el-form-item label="设备类型">
+                    <el-input v-model="deviceForm.deviceType" placeholder="请输入设备类型"></el-input>
+                </el-form-item>
+                <el-form-item label="位置">
+                    <el-input v-model="deviceForm.location" placeholder="请输入位置"></el-input>
+                </el-form-item>
+                <el-form-item label="备注">
+                    <el-input v-model="deviceForm.remark" type="textarea" placeholder="请输入备注"></el-input>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <el-button @click="deviceDialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="submitDevice" :loading="submitting">确定</el-button>
+            </template>
+        </el-dialog>
     </div>
 
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/element-plus/dist/index.full.js"></script>
-    <script src="js/templates.js"></script>
+    <script src="js/main.js?v=2"></script>
 </body>
 </html>

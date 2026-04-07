@@ -83,6 +83,9 @@ const app = createApp({
         const showUploadDialog = () => {
             selectedFile.value = null;
             uploadDialogVisible.value = true;
+            if (uploadRef.value) {
+                uploadRef.value.clearFiles();
+            }
         };
 
         const handleFileChange = (file) => {

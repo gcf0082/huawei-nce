@@ -30,11 +30,9 @@ const app = createApp({
             selectedFile.value = null;
             uploadForm.value.name = '';
             uploadDialogVisible.value = true;
-            setTimeout(() => {
-                if (uploadRef.value) {
-                    uploadRef.value.clearFiles();
-                }
-            }, 100);
+            if (uploadRef.value) {
+                uploadRef.value.clearFiles();
+            }
         };
 
         const handleFileChange = (file) => {
