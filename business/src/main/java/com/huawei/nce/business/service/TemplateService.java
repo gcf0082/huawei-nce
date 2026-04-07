@@ -1,5 +1,6 @@
 package com.huawei.nce.business.service;
 
+import com.huawei.nce.business.dto.TemplateSummary;
 import com.huawei.nce.business.model.ConfigTemplate;
 import com.huawei.nce.business.repository.ConfigTemplateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import java.io.*;
 import java.nio.file.*;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
@@ -75,15 +77,10 @@ public class TemplateService {
         return template;
     }
 
-    public List<ConfigTemplate> getAllTemplates() {
-        List<ConfigTemplate> result = new ArrayList<>();
-        for (ConfigTemplate t : repository.findAll()) {
-            ConfigTemplate simple = new ConfigTemplate();
-            simple.setId(t.getId());
-            simple.setName(t.getName());
-            result.add(simple);
-        }
-        return result;
+    public List<TemplateSummary> getAllTemplates() {
+        return repository.findAll().stream()
+                .map(t -> new TemplateSummary(t.getId(), t.getName()))
+                .collect(Collectors.toList());
     }
 
     public Optional<ConfigTemplate> getTemplate(Long id) {

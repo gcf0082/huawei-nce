@@ -1,6 +1,7 @@
 package com.huawei.nce.business.controller;
 
 import com.huawei.nce.business.dto.ApiResponse;
+import com.huawei.nce.business.dto.TemplateSummary;
 import com.huawei.nce.business.model.ConfigTemplate;
 import com.huawei.nce.business.service.TemplateService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -30,7 +31,7 @@ public class TemplateController {
 
     @PostMapping("/templates/upload")
     @Operation(summary = "上传配置模板", description = "接收ZIP文件并解压保存到存储目录")
-    public ApiResponse<ConfigTemplate> uploadTemplate(
+    public ApiResponse<?> uploadTemplate(
             @Parameter(description = "模板名称") @RequestParam("name") String name,
             @Parameter(description = "ZIP配置文件") @RequestParam("file") MultipartFile file) {
         if (name == null || name.trim().isEmpty()) {
@@ -44,8 +45,8 @@ public class TemplateController {
             return ApiResponse.error("只支持ZIP格式");
         }
         try {
-            ConfigTemplate template = templateService.saveTemplate(name, file);
-            return ApiResponse.success(template);
+            templateService.saveTemplate(name, file);
+            return ApiResponse.success(true);
         } catch (RuntimeException e) {
             return ApiResponse.error(e.getMessage());
         } catch (IOException e) {
@@ -55,7 +56,7 @@ public class TemplateController {
 
     @GetMapping("/templates")
     @Operation(summary = "获取模板列表", description = "获取所有已保存的配置模板")
-    public ApiResponse<List<ConfigTemplate>> getTemplates() {
+    public ApiResponse<List<TemplateSummary>> getTemplates() {
         return ApiResponse.success(templateService.getAllTemplates());
     }
 
