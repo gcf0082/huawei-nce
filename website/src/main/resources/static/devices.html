@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>华为NCE网管 - 网络监控</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    <link rel="stylesheet" href="css/main.css?v=2">
+</head>
+<body>
+    <div id="app">
+        <el-container>
+            <el-aside width="200px" class="sidebar">
+                <div class="logo">
+                    <h3>NCE</h3>
+                    <p>网络管控</p>
+                </div>
+                <el-menu default-active="devices" class="sidebar-menu">
+                    <el-menu-item index="templates" @click="goTo('/templates.html')">
+                        <span>配置模板</span>
+                    </el-menu-item>
+                    <el-menu-item index="alarms" @click="goTo('/alarms.html')">
+                        <span>告警管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="devices" @click="goTo('/devices.html')">
+                        <span>网络监控</span>
+                    </el-menu-item>
+                </el-menu>
+            </el-aside>
+
+            <el-container>
+                <el-header class="header">
+                    <h2>网络监控</h2>
+                    <el-dropdown>
+                        <div class="user-dropdown">
+                            <span>用户</span>
+                        </div>
+                        <template #dropdown>
+                            <el-dropdown-menu>
+                                <el-dropdown-item @click="handleLogout">退出登录</el-dropdown-item>
+                            </el-dropdown-menu>
+                        </template>
+                    </el-dropdown>
+                </el-header>
+
+                <el-main>
+                    <el-card>
+                        <template #header>
+                            <div class="card-header">
+                                <span>设备列表</span>
+                                <el-button type="primary" @click="showDeviceDialog">添加设备</el-button>
+                            </div>
+                        </template>
+                        <el-table :data="devices" v-loading="tableLoading">
+                            <el-table-column prop="name" label="设备名称"></el-table-column>
+                            <el-table-column prop="ip" label="IP地址" width="140"></el-table-column>
+                            <el-table-column prop="deviceType" label="类型"></el-table-column>
+                            <el-table-column prop="location" label="位置"></el-table-column>
+                            <el-table-column label="状态" width="80">
+                                <template #default="scope">
+                                    <el-tag :type="scope.row.online ? 'success' : 'danger'">
+                                        {{ scope.row.online ? '在线' : '离线' }}
+                                    </el-tag>
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="lastUpdate" label="最后更新" width="160"></el-table-column>
+                            <el-table-column label="操作" width="200">
+                                <template #default="scope">
+                                    <el-button type="text" @click="toggleDeviceStatus(scope.row)">
+                                        {{ scope.row.online ? '设为离线' : '设为在线' }}
+                                    </el-button>
+                                    <el-button type="text" @click="editDevice(scope.row)">编辑</el-button>
+                                    <el-button type="text" @click="deleteDevice(scope.row.id)">删除</el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </el-card>
+                </el-main>
+            </el-container>
+        </el-container>
+
+        <el-dialog v-model="deviceDialogVisible" :title="deviceEditMode ? '编辑设备' : '添加设备'" width="400px">
+            <el-form :model="deviceForm" label-width="80px">
+                <el-form-item label="设备名称" required>
+                    <el-input v-model="deviceForm.name" placeholder="请输入设备名称"></el-input>
+                </el-form-item>
+                <el-form-item label="设备IP" required>
+                    <el-input v-model="deviceForm.ip" placeholder="请输入设备IP"></el-input>
+                </el-form-item>
+                <el-form-item label="设备类型">
+                    <el-input v-model="deviceForm.deviceType" placeholder="请输入设备类型"></el-input>
+                </el-form-item>
+                <el-form-item label="位置">
+                    <el-input v-model="deviceForm.location" placeholder="请输入位置"></el-input>
+                </el-form-item>
+                <el-form-item label="备注">
+                    <el-input v-model="deviceForm.remark" type="textarea" placeholder="请输入备注"></el-input>
+                </el-form-item>
+            </el-form>
+            <template #footer>
+                <el-button @click="deviceDialogVisible = false">取消</el-button>
+                <el-button type="primary" @click="submitDevice" :loading="submitting">确定</el-button>
+            </template>
+        </el-dialog>
+    </div>
+
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://unpkg.com/element-plus/dist/index.full.js"></script>
+    <script src="js/devices-page.js?v=2"></script>
+</body>
+</html>
